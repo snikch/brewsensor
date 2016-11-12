@@ -7,6 +7,10 @@ unsigned long startTime = 0;  // timing variables for enforcing min/max cycling 
 unsigned long stopTime = 0;
 
 void updateFridge() {        // maintain fridgeTemp at temperature set by mainPID -- COOLing with predictive differential, HEATing with time proportioned heatPID
+  Serial.print("Checking fridge: ");
+  Serial.print(fridgeState[0]);
+  Serial.print(fridgeState[1]);
+  Serial.println(coolOutput);
   switch (fridgeState[0]) {  // MAIN switch -- IDLE/peak detection, COOL, HEAT routines
     default:
     case IDLE:

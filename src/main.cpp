@@ -10,7 +10,7 @@ double coolInput, coolOutput, coolKp, coolKi, coolKd;  // SP, PV, CO, tuning par
 double heatInput, heatOutput, heatSetpoint, heatKp, heatKi, heatKd;  // SP, PV, CO tuning params for HEAT PID
 
 bool RELAY_ON = RELAY_ON_VALUE;
-bool RELAY_OFF = RELAY_OFF_VALUE;
+bool RELAY_OFF = !RELAY_ON_VALUE;
 
 byte programState;  // 6 bit-flag program state -- (mainPID manual/auto)(heatPID manual/auto)(temp C/F)(fermentation profile on/off)(data capture on/off)(file operations) = 0b000000
 #define MAIN_PID_MODE 0b100000
