@@ -5,12 +5,21 @@ double peakEstimator = 30;    // to predict COOL overshoot; units of deg C per h
 double peakEstimate = 0;      // to determine prediction error = (estimate - actual)
 unsigned long startTime = 0;  // timing variables for enforcing min/max cycling times
 unsigned long stopTime = 0;
+int printDelay = 1000;
+int lastPrint = 0;
 
 void updateFridge() {        // maintain fridgeTemp at temperature set by mainPID -- COOLing with predictive differential, HEATing with time proportioned heatPID
-  Serial.print("Checking fridge: ");
-  Serial.print(fridgeState[0]);
-  Serial.print(fridgeState[1]);
-  Serial.println(coolOutput);
+  if (millis() - lastPrint > printDelay) {
+    Serial.print("State ");
+    Serial.print(fridgeState[0]);
+    Serial.print(" ");
+    Serial.println(fridgeState[1]);
+    Serial.print("Input ");
+    Serial.println(fridgeTemp.getFilter());
+    Serial.print("Output ");
+    Serial.println(coolOutput);
+    lastPrint = millis();
+  }
   switch (fridgeState[0]) {  // MAIN switch -- IDLE/peak detection, COOL, HEAT routines
     default:
     case IDLE:

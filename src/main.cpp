@@ -25,7 +25,7 @@ OneWire onewire(onewireData);  // declare instance of the OneWire class to commu
 // probe externTemp(&onewire), fridgeTemp(&onewire);
 probe fridgeTemp(&onewire);
 
-PID coolPID(&coolInput, &coolOutput, &coolSetpoint, coolKp, coolKi, coolKd, DIRECT);  // main PID instance for beer temp control (DIRECT: beer temperature ~ fridge(air) temperature)
+PID coolPID(&coolInput, &coolOutput, &coolSetpoint, 2, 5, 1, DIRECT);  // main PID instance for beer temp control (DIRECT: beer temperature ~ fridge(air) temperature)
 PID heatPID(&heatInput, &heatOutput, &heatSetpoint, heatKp, heatKi, heatKd, DIRECT);   // create instance of PID class for cascading HEAT control (HEATing is a DIRECT process)
 
 void setup() {
@@ -40,11 +40,12 @@ void setup() {
   // externTemp.init();
   fridgeTemp.init();
 
-  coolPID.SetTunings(coolKp, coolKi, coolKd);    // set tuning params
+  // coolPID.SetTunings(coolKp, coolKi, coolKd);    // set tuning params
   coolPID.SetSampleTime(1000);       // (ms) matches sample rate (1 hz)
   coolPID.SetOutputLimits(0.3, 38);  // deg C (~32.5 - ~100 deg F)
-  if (programState & MAIN_PID_MODE) coolPID.SetMode(AUTOMATIC);  // set man/auto
-    else coolPID.SetMode(MANUAL);
+  coolPID.SetMode(AUTOMATIC);  // set man/auto
+  // if (programState & MAIN_PID_MODE) coolPID.SetMode(AUTOMATIC);  // set man/auto
+  //   else coolPID.SetMode(MANUAL);
   coolPID.setOutputType(FILTERED);
   coolPID.setFilterConstant(10);
   coolPID.initHistory();
@@ -52,8 +53,9 @@ void setup() {
   heatPID.SetTunings(heatKp, heatKi, heatKd);
   heatPID.SetSampleTime(heatWindow);       // sampletime = time proportioning window length
   heatPID.SetOutputLimits(0, heatWindow);  // heatPID output = duty time per window
-  if (programState & HEAT_PID_MODE) heatPID.SetMode(AUTOMATIC);
-    else heatPID.SetMode(MANUAL);
+  heatPID.SetMode(AUTOMATIC);
+  // if (programState & HEAT_PID_MODE) heatPID.SetMode(AUTOMATIC);
+  //   else heatPID.SetMode(MANUAL);
   heatPID.initHistory();
 }
 
@@ -62,12 +64,19 @@ void loop() {
   mainUpdate();                            // subroutines manage their own timings, call every loop
 }
 
+double lastCool;
+
 void mainUpdate() {                              // call all update subroutines
   probe::startConv();                            // start conversion for all sensors
   if (probe::isReady()) {                        // update sensors when conversion complete
-    // fridgeTemp.update();
+    fridgeTemp.update();
     // externTemp.update();
     coolInput = fridgeTemp.getFilter();
+    if (coolInput != lastCool) {
+      Serial.print("Temp changed ");
+      Serial.println(coolInput);
+      lastCool = coolInput;
+    }
   }
   coolPID.Compute();                             // update main PID
   updateFridge();                                // update fridge status

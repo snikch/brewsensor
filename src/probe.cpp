@@ -1,8 +1,8 @@
 #include "probe.h"
 
-#ifndef DEBUG
+// #ifndef DEBUG
 #define DEBUG true
-#endif
+// #endif
 
 OneWire* probe::_myWire = 0;  // static member initialization
 double probe::_sampleHz = 1;
