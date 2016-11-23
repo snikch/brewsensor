@@ -37,6 +37,10 @@ void setup() {
     Serial.begin(BAUD);
   #endif
 
+  // Change WDT to an 8s timer.
+  ESP.wdtDisable();
+  ESP.wdtEnable(WDTO_8S);
+
   // externTemp.init();
   fridgeTemp.init();
 
@@ -57,11 +61,19 @@ void setup() {
   // if (programState & HEAT_PID_MODE) heatPID.SetMode(AUTOMATIC);
   //   else heatPID.SetMode(MANUAL);
   heatPID.initHistory();
+  Serial.println("Setup Complete");
 }
 
+unsigned long count = 0;
 void mainUpdate();  // update sensors, PID output, fridge state, write to log, run profiles
 void loop() {
+  unsigned long now = millis();
+  if (now - count > 1000) {
+    Serial.println("Alive");
+    count = now;
+  }
   mainUpdate();                            // subroutines manage their own timings, call every loop
+  ESP.wdtFeed();
 }
 
 double lastCool;
